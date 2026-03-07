@@ -1,0 +1,1288 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Wonder</title>
+<link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,600;1,400&family=Nunito:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+/* ═══════════════════════════════════════
+   DESIGN TOKENS — "Here We Are" palette
+   Cream paper · forest · ochre · terracotta · night blue
+═══════════════════════════════════════ */
+:root {
+  --teal:       #2A7F7F;
+  --teal-light: #4AADAD;
+  --teal-pale:  #E8F5F5;
+  --teal-dark:  #1A5C5C;
+  --sunset:     #E07040;
+  --sunset-pale:#FDE8DC;
+  --warm:       #FDFAF6;
+  --sand:       #F0E8D8;
+  --ink:        #1A2E2E;
+  --muted:      #6B8A8A;
+  --white:      #FFFFFF;
+  /* aliases so old var() refs still resolve */
+  --forest:     var(--teal-dark);
+  --forest-mid: var(--teal);
+  --forest-pale:var(--teal-pale);
+  --ochre:      var(--sunset);
+  --ochre-pale: var(--sunset-pale);
+  --paper:      var(--warm);
+  --paper-dark: var(--sand);
+  --cream:      var(--white);
+  --night:      #1A2E2E;
+  --sky:        var(--teal-light);
+  --sky-pale:   var(--teal-pale);
+  --terra:      var(--sunset);
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+html, body {
+  font-family: 'Nunito', sans-serif;
+  background: var(--warm);
+  color: var(--ink);
+  min-height: 100vh;
+}
+
+/* ── grain overlay (the "Here We Are" texture) ── */
+body::after {
+  content: '';
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 9999;
+  opacity: 0.02;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='300' height='300' filter='url(%23n)' opacity='1'/%3E%3C/svg%3E");
+  background-size: 200px 200px;
+}
+
+.screen { display: none; min-height: 100vh; flex-direction: column; }
+.screen.active { display: flex; }
+
+/* ══════════════════════════════════════
+   SHARED HEADER
+══════════════════════════════════════ */
+.site-header {
+  padding: 22px 28px 18px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-bottom: 1.5px solid rgba(42,127,127,0.12);
+  background: white;
+  cursor: pointer;
+}
+
+.logo-lockup {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 10px;
+  text-decoration: none;
+  border: none;
+  background: none;
+  cursor: pointer;
+  padding: 0;
+}
+
+.logo-mark {
+  flex-shrink: 0;
+}
+
+.logo-wordmark {
+  font-family: 'Lora', serif;
+  font-size: 22px;
+  color: var(--forest);
+  letter-spacing: -0.2px;
+  line-height: 1;
+}
+
+.logo-tagline {
+  display: none;
+}
+
+/* ══════════════════════════════════════
+   LANDING PAGE — screen-app
+══════════════════════════════════════ */
+#screen-app {
+  background: var(--warm);
+}
+
+.landing-hero {
+  background: white;
+  padding: 48px 28px 40px;
+  text-align: center;
+  border-bottom: 1.5px solid rgba(42,127,127,0.08);
+  position: relative;
+  overflow: hidden;
+}
+
+/* big background shape on hero */
+.landing-hero::before {
+  content: '';
+  position: absolute;
+  bottom: -60px; left: 50%; transform: translateX(-50%);
+  width: 700px; height: 220px;
+  background: var(--teal-pale);
+  border-radius: 50%;
+  opacity: 0.35;
+}
+
+.hero-illustration {
+  position: relative;
+  margin: 0 auto 28px;
+  width: 220px;
+  height: 200px;
+}
+
+.hero-title {
+  font-family: 'Lora', serif;
+  font-size: clamp(42px, 8vw, 62px);
+  color: var(--forest);
+  letter-spacing: -1px;
+  line-height: 1;
+  margin-bottom: 10px;
+  position: relative;
+}
+
+.hero-sub {
+  font-family: 'Lora', serif;
+  font-style: italic;
+  font-size: 17px;
+  color: var(--muted);
+  position: relative;
+}
+
+.landing-body {
+  flex: 1;
+  max-width: 620px;
+  width: 100%;
+  margin: 0 auto;
+  padding: 40px 28px 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 32px;
+}
+
+/* question input area */
+.ask-area { display: flex; flex-direction: column; gap: 12px; }
+
+.ask-label {
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.ask-row { display: flex; gap: 10px; align-items: flex-end; }
+
+textarea {
+  flex: 1;
+  border: 2px solid rgba(42,127,127,0.2);
+  border-radius: 14px;
+  padding: 14px 18px;
+  font-family: 'Nunito', sans-serif;
+  font-size: 16px;
+  color: var(--ink);
+  background: white;
+  resize: none;
+  outline: none;
+  min-height: 68px;
+  max-height: 150px;
+  line-height: 1.55;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+textarea:focus { border-color: var(--teal); box-shadow: 0 0 0 4px rgba(45,90,61,0.07); }
+textarea::placeholder { color: #A8B89A; font-style: italic; }
+
+.send-btn {
+  background: var(--teal);
+  color: white;
+  border: none;
+  border-radius: 12px;
+  width: 50px; height: 50px;
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer; flex-shrink: 0;
+  transition: background 0.2s, transform 0.15s, box-shadow 0.2s;
+}
+.send-btn:hover:not(:disabled) { background: var(--teal-dark); transform: scale(1.06); box-shadow: 0 6px 18px rgba(45,90,61,0.28); }
+.send-btn:disabled { background: #A8CCCC; cursor: not-allowed; }
+
+/* suggestions */
+.suggestions-label {
+  font-size: 11px; font-weight: 700;
+  letter-spacing: 2px; text-transform: uppercase;
+  color: var(--muted); margin-bottom: 10px;
+}
+
+.chips { display: flex; flex-wrap: wrap; gap: 8px; }
+
+.chip {
+  background: white;
+  color: var(--teal-dark);
+  border: 1.5px solid rgba(42,127,127,0.2);
+  border-radius: 100px;
+  padding: 8px 16px;
+  font-size: 13px;
+  font-family: 'Nunito', sans-serif;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.18s;
+  user-select: none;
+}
+.chip:hover { background: var(--teal); color: white; border-color: var(--teal); transform: translateY(-1px); }
+
+/* ══════════════════════════════════════
+   ANSWER PAGE — screen-answer
+══════════════════════════════════════ */
+#screen-answer { background: var(--warm); }
+
+/* ── floating background doodles ── */
+.bg-doodle {
+  position: fixed;
+  pointer-events: none;
+  z-index: 0;
+  opacity: 0.06;
+}
+.screen > *:not(.bg-doodle) { position: relative; z-index: 1; }
+
+.answer-body {
+  flex: 1;
+  max-width: 620px;
+  width: 100%;
+  margin: 0 auto;
+  padding: 36px 28px 32px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.answer-card {
+  background: white;
+  border-radius: 18px;
+  padding: 32px 30px;
+  box-shadow: 0 3px 32px rgba(45,90,61,0.09);
+  border-top: 4px solid var(--teal);
+  animation: fadeUp 0.4s ease;
+}
+
+.answer-you-asked {
+  font-size: 11px; font-weight: 700;
+  letter-spacing: 2px; text-transform: uppercase;
+  color: var(--muted); margin-bottom: 6px;
+}
+
+.answer-question {
+  font-family: 'Lora', serif;
+  font-style: italic;
+  font-size: 17px;
+  color: var(--forest);
+  margin-bottom: 22px;
+  padding-bottom: 18px;
+  border-bottom: 1.5px solid rgba(42,127,127,0.12);
+  line-height: 1.5;
+}
+
+.answer-text {
+  font-family: 'Lora', serif;
+  font-size: 17px;
+  line-height: 1.85;
+  color: var(--ink);
+}
+
+.answer-followup {
+  margin-top: 24px;
+  padding-top: 20px;
+  border-top: 1.5px solid rgba(42,127,127,0.08);
+}
+
+.followup-label {
+  font-size: 10px; font-weight: 700;
+  letter-spacing: 2px; text-transform: uppercase;
+  color: var(--sunset); margin-bottom: 10px;
+}
+
+.followup-text {
+  font-family: 'Lora', serif;
+  font-style: italic;
+  font-size: 16px;
+  color: var(--muted);
+  line-height: 1.65;
+  margin-bottom: 14px;
+}
+
+/* Clickable follow-up chips (same style as landing chips) */
+.followup-chips { display: flex; flex-wrap: wrap; gap: 8px; }
+
+.answer-wrapup {
+  margin-top: 20px;
+  padding-top: 18px;
+  border-top: 1.5px solid rgba(42,127,127,0.1);
+}
+.wrapup-text {
+  font-family: 'Lora', serif;
+  font-style: italic;
+  font-size: 15px;
+  color: var(--muted);
+  line-height: 1.65;
+}
+
+.ask-another-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: none;
+  border: 2px solid rgba(42,127,127,0.25);
+  border-radius: 100px;
+  padding: 12px 22px;
+  font-family: 'Nunito', sans-serif;
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--teal);
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.ask-another-btn:hover { background: var(--teal); color: white; border-color: var(--forest); transform: translateY(-1px); }
+
+/* loading */
+.loading-card {
+  background: white; border-radius: 16px; padding: 28px 24px;
+  box-shadow: 0 2px 20px rgba(45,90,61,0.07);
+  display: flex; align-items: center; gap: 16px;
+  animation: fadeUp 0.3s ease;
+}
+
+.dots { display: flex; gap: 6px; }
+.dots span { width: 8px; height: 8px; border-radius: 50%; background: var(--teal-light); animation: dp 1.2s ease-in-out infinite; }
+.dots span:nth-child(2) { animation-delay: 0.18s; }
+.dots span:nth-child(3) { animation-delay: 0.36s; }
+@keyframes dp { 0%,80%,100% { transform:scale(0.6); opacity:0.4; } 40% { transform:scale(1); opacity:1; } }
+
+.loading-text { font-family: 'Lora', serif; font-style: italic; font-size: 15px; color: var(--muted); }
+
+.error-card { background: #FFF3EE; border: 1.5px solid #E8C4AA; border-radius: 12px; padding: 16px 20px; font-size: 14px; color: #7A3A1A; line-height: 1.55; animation: fadeUp 0.3s ease; }
+
+@keyframes fadeUp { from { opacity:0; transform:translateY(12px); } to { opacity:1; transform:translateY(0); } }
+
+/* ══════════════════════════════════════
+   INFO PAGES — shared
+══════════════════════════════════════ */
+.info-page { position: relative; overflow: hidden; }
+
+.info-bg-shape {
+  position: absolute;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.info-inner {
+  position: relative; z-index: 1;
+  max-width: 560px; width: 100%;
+  margin: 0 auto;
+  padding: 44px 28px 64px;
+  display: flex; flex-direction: column;
+}
+
+.page-eyebrow {
+  font-size: 11px; font-weight: 700;
+  letter-spacing: 2.5px; text-transform: uppercase;
+  color: var(--teal-light); margin-bottom: 14px;
+}
+
+.info-inner h1 {
+  font-family: 'Lora', serif;
+  font-size: clamp(24px, 5vw, 32px);
+  color: var(--ink); line-height: 1.25; margin-bottom: 28px;
+}
+
+.info-inner p {
+  font-size: 15.5px; line-height: 1.82; color: #2A4A4A; margin-bottom: 16px;
+}
+
+.pull-quote {
+  border-left: 3px solid var(--teal);
+  background: var(--teal-pale);
+  border-radius: 0 10px 10px 0;
+  padding: 16px 20px; margin: 20px 0 24px;
+  font-family: 'Lora', serif; font-style: italic;
+  font-size: 16px; color: var(--teal-dark); line-height: 1.65;
+}
+
+.highlight-line {
+  background: var(--sunset-pale);
+  border-radius: 6px;
+  padding: 2px 6px;
+  display: inline;
+}
+
+.info-illustration { margin: 0 auto 36px; display: block; }
+
+.info-cta { margin-top: 36px; }
+
+.btn-primary {
+  background: var(--teal); color: white; border: none;
+  border-radius: 100px; padding: 14px 30px;
+  font-family: 'Nunito', sans-serif; font-size: 15px; font-weight: 700;
+  cursor: pointer; transition: all 0.2s;
+}
+.btn-primary:hover { background: var(--teal-dark); transform: translateY(-2px); box-shadow: 0 8px 22px rgba(45,90,61,0.22); }
+
+.kids-fact-box {
+  background: var(--teal-pale);
+  border-radius: 14px; padding: 20px 22px; margin: 20px 0;
+  border: 1.5px solid rgba(200,135,58,0.2);
+}
+.fact-eyebrow { font-size: 10px; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; color: var(--teal); margin-bottom: 8px; }
+.kids-fact-box p { margin-bottom: 0; color: var(--ink); }
+
+/* about page */
+#screen-about { background: var(--warm); }
+
+/* ══════════════════════════════════════
+   SHARED FOOTER
+══════════════════════════════════════ */
+.site-footer {
+  border-top: 1.5px solid rgba(42,127,127,0.12);
+  padding: 16px 28px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 6px;
+  background: white;
+  flex-wrap: wrap;
+}
+
+.footer-link {
+  background: none; border: none;
+  font-family: 'Nunito', sans-serif; font-size: 13px; color: var(--muted);
+  cursor: pointer; padding: 4px 8px; border-radius: 6px;
+  transition: color 0.18s, background 0.18s;
+}
+.footer-link:hover { color: var(--teal); background: var(--teal-pale); }
+
+.footer-dot { color: var(--paper-dark); font-size: 12px; user-select: none; }
+
+/* ══════════════════════════════════════
+   ILLUSTRATION HELPERS
+══════════════════════════════════════ */
+@keyframes float {
+  0%,100% { transform: translateY(0); }
+  50%      { transform: translateY(-9px); }
+}
+
+@keyframes twinkle {
+  0%,100% { opacity: 0.6; }
+  50%      { opacity: 1; }
+}
+
+</style>
+</head>
+<body>
+
+<!-- ══════════════════════════════════════
+     SCREEN 1 — LANDING (main app)
+══════════════════════════════════════ -->
+<div class="screen active" id="screen-app">
+  <!-- floating bg doodles -->
+  <svg class="bg-doodle" width="320" height="320" style="top:-60px;right:-80px;" viewBox="0 0 320 320" fill="none">
+    <path d="M160 14 C240 46, 290 140, 258 232 C226 296, 100 290, 62 208 C24 126, 80 36, 160 14Z" fill="var(--teal)"/>
+    <path d="M160 14 Q166 140 148 232" stroke="white" stroke-width="3" fill="none" opacity="0.3"/>
+    <path d="M122 66 Q158 90 170 138" stroke="white" stroke-width="2" fill="none" opacity="0.25"/>
+  </svg>
+  <svg class="bg-doodle" width="200" height="200" style="bottom:60px;left:-50px;" viewBox="0 0 200 200" fill="none">
+    <circle cx="100" cy="100" r="88" fill="none" stroke="var(--teal)" stroke-width="7"/>
+    <circle cx="100" cy="100" r="62" fill="none" stroke="var(--teal)" stroke-width="5"/>
+    <circle cx="100" cy="100" r="38" fill="none" stroke="var(--teal)" stroke-width="3.5"/>
+    <circle cx="100" cy="100" r="18" fill="none" stroke="var(--teal)" stroke-width="2.5"/>
+  </svg>
+  <svg class="bg-doodle" width="160" height="260" style="bottom:20px;right:-20px;opacity:0.04;" viewBox="0 0 160 260" fill="none">
+    <line x1="80" y1="0" x2="80" y2="260" stroke="var(--sunset)" stroke-width="8" stroke-linecap="round"/>
+    <line x1="0" y1="130" x2="160" y2="130" stroke="var(--sunset)" stroke-width="8" stroke-linecap="round"/>
+    <line x1="23" y1="23" x2="137" y2="237" stroke="var(--sunset)" stroke-width="5" stroke-linecap="round"/>
+    <line x1="137" y1="23" x2="23" y2="237" stroke="var(--sunset)" stroke-width="5" stroke-linecap="round"/>
+  </svg>
+
+  <header class="site-header" onclick="goHome()">
+    <button class="logo-lockup" onclick="goHome()" aria-label="Wonder home">
+      <!-- Logo: W constellation — irregular hand-mapped, W legible -->
+      <svg class="logo-mark" width="44" height="44" viewBox="0 0 44 44" fill="none" aria-hidden="true">
+        <!-- night sky circle -->
+        <circle cx="22" cy="22" r="21" fill="var(--night)"/>
+        <!-- W constellation lines — hand-drawn feel, varied opacity -->
+        <g stroke="#8BBFB0" stroke-width="1.0" stroke-linecap="round">
+          <line x1="8"  y1="11" x2="15" y2="30" stroke-opacity="0.52"/>
+          <line x1="15" y1="30" x2="20" y2="19" stroke-opacity="0.46"/>
+          <line x1="20" y1="19" x2="29" y2="31" stroke-opacity="0.50"/>
+          <line x1="29" y1="31" x2="34" y2="11" stroke-opacity="0.44"/>
+          <!-- stray lines — constellation chart feel -->
+          <line x1="8"  y1="11" x2="18" y2="6"  stroke-opacity="0.28"/>
+          <line x1="34" y1="11" x2="37" y2="24" stroke-opacity="0.20"/>
+        </g>
+        <!-- W stars — ochre, noticeably varied sizes -->
+        <circle cx="8"  cy="11" r="2.5" fill="var(--ochre)" opacity="0.95"/>
+        <circle cx="15" cy="30" r="1.6" fill="var(--ochre)" opacity="0.85"/>
+        <circle cx="20" cy="19" r="2.1" fill="var(--ochre)" opacity="0.90"/>
+        <circle cx="29" cy="31" r="1.5" fill="var(--ochre)" opacity="0.82"/>
+        <circle cx="34" cy="11" r="2.4" fill="var(--ochre)" opacity="0.95"/>
+        <!-- extra ochre stray — near D, slightly misleads eye before W resolves -->
+        <circle cx="33" cy="23" r="1.3" fill="var(--ochre)" opacity="0.70"/>
+        <!-- white stray stars — depth -->
+        <circle cx="18" cy="6"  r="1.1" fill="white" opacity="0.60"/>
+        <circle cx="37" cy="24" r="0.8" fill="white" opacity="0.40"/>
+        <circle cx="5"  cy="28" r="0.6" fill="white" opacity="0.25"/>
+        <circle cx="26" cy="5"  r="0.6" fill="white" opacity="0.28"/>
+        <circle cx="11" cy="36" r="0.5" fill="white" opacity="0.20"/>
+        <circle cx="38" cy="36" r="0.5" fill="white" opacity="0.22"/>
+      </svg>
+      <div class="logo-wordmark">Wonder</div>
+    </button>
+  </header>
+
+  <main>
+    <!-- Hero illustration strip -->
+    <div class="landing-hero">
+
+      <!-- Hero: floating nature scene — clean SVG, warm palette -->
+      <div class="hero-illustration" style="animation: float 7s ease-in-out infinite;">
+        <svg width="200" height="200" viewBox="0 0 200 200" fill="none" aria-label="A sun, clouds, a tree and a snail in a peaceful nature scene">
+          <defs>
+            <radialGradient id="bgCircle" cx="50%" cy="45%" r="55%">
+              <stop offset="0%" stop-color="#D8EEE8"/>
+              <stop offset="100%" stop-color="#EAF3F0"/>
+            </radialGradient>
+            <radialGradient id="sunFill" cx="40%" cy="40%" r="60%">
+              <stop offset="0%" stop-color="#FFE090"/>
+              <stop offset="100%" stop-color="#D4903A"/>
+            </radialGradient>
+          </defs>
+
+          <!-- Soft background circle -->
+          <circle cx="100" cy="100" r="96" fill="url(#bgCircle)"/>
+
+          <!-- Sun top-right -->
+          <circle cx="148" cy="46" r="20" fill="url(#sunFill)" opacity="0.92"/>
+          <g stroke="#D4903A" stroke-width="2.2" stroke-linecap="round" opacity="0.5">
+            <line x1="148" y1="20" x2="148" y2="14"/>
+            <line x1="148" y1="72" x2="148" y2="78"/>
+            <line x1="122" y1="46" x2="116" y2="46"/>
+            <line x1="174" y1="46" x2="180" y2="46"/>
+            <line x1="131" y1="29" x2="127" y2="25"/>
+            <line x1="165" y1="29" x2="169" y2="25"/>
+            <line x1="131" y1="63" x2="127" y2="67"/>
+            <line x1="165" y1="63" x2="169" y2="67"/>
+          </g>
+
+          <!-- Cloud -->
+          <ellipse cx="56" cy="44" rx="26" ry="13" fill="white" opacity="0.9"/>
+          <ellipse cx="40" cy="49" rx="17" ry="12" fill="white" opacity="0.9"/>
+          <ellipse cx="74" cy="49" rx="17" ry="12" fill="white" opacity="0.9"/>
+
+          <!-- Ground — warm green hill -->
+          <path d="M4 148 Q50 132 100 138 Q150 144 196 130 L196 196 L4 196 Z" fill="var(--forest)"/>
+          <path d="M4 148 Q50 132 100 138 Q150 144 196 130" stroke="var(--forest-mid)" stroke-width="2" fill="none" opacity="0.5"/>
+
+          <!-- Tree — round canopy, flat style -->
+          <rect x="28" y="112" width="10" height="40" rx="4" fill="#2D4E28"/>
+          <ellipse cx="33" cy="108" rx="26" ry="28" fill="var(--forest)"/>
+          <ellipse cx="33" cy="98"  rx="18" ry="20" fill="var(--forest-mid)" opacity="0.7"/>
+          <!-- leaf highlight -->
+          <ellipse cx="42" cy="96" rx="10" ry="8" fill="#6AAE70" opacity="0.45"/>
+
+          <!-- Bird silhouettes -->
+          <g fill="none" stroke="var(--forest-mid)" stroke-width="1.8" stroke-linecap="round">
+            <path d="M100 68 Q105 63 110 68"/>
+            <path d="M116 60 Q120 56 124 60"/>
+          </g>
+
+          <!-- Snail on ground (right side) -->
+          <g transform="translate(130, 150)">
+            <!-- shell — concentric arcs -->
+            <circle cx="14" cy="0" r="14" fill="none" stroke="var(--ochre)" stroke-width="2.5" opacity="0.85"/>
+            <circle cx="14" cy="0" r="9"  fill="none" stroke="var(--ochre)" stroke-width="1.8" opacity="0.7"/>
+            <circle cx="14" cy="0" r="4"  fill="var(--ochre)" opacity="0.5"/>
+            <!-- body -->
+            <path d="M0 8 Q8 14 28 10" stroke="#B87840" stroke-width="3.5" stroke-linecap="round" fill="none"/>
+            <!-- antennae -->
+            <line x1="26" y1="10" x2="30" y2="3"  stroke="#B87840" stroke-width="1.5" stroke-linecap="round"/>
+            <line x1="28" y1="10" x2="34" y2="5"  stroke="#B87840" stroke-width="1.5" stroke-linecap="round"/>
+            <circle cx="30" cy="3"  r="1.5" fill="#B87840"/>
+            <circle cx="34" cy="5"  r="1.5" fill="#B87840"/>
+          </g>
+
+          <!-- Small sparkle bottom-left -->
+          <g stroke="var(--ochre)" stroke-width="1.6" stroke-linecap="round" opacity="0.55">
+            <line x1="68" y1="158" x2="68" y2="152"/>
+            <line x1="64" y1="155" x2="72" y2="155"/>
+          </g>
+
+          <!-- Outer ring — subtle border -->
+          <circle cx="100" cy="100" r="96" fill="none" stroke="var(--forest-pale)" stroke-width="2" opacity="0.6"/>
+        </svg>
+      </div>
+
+      <h1 class="hero-title">Wonder</h1>
+      <p class="hero-sub">Ask anything about the natural world</p>
+    </div>
+
+    <div class="landing-body">
+      <div class="ask-area">
+        <label class="ask-label" for="q-input">Type your question here</label>
+        <div class="ask-row">
+          <textarea
+            id="q-input"
+            placeholder="What are you wondering about today?"
+            rows="2"
+            onkeydown="handleKey(event)"
+            oninput="autoResize(this)"
+          ></textarea>
+          <button class="send-btn" id="send-btn" onclick="askWonder()" aria-label="Ask Wonder">
+            <svg width="20" height="20" viewBox="0 0 20 20" fill="none" aria-hidden="true">
+              <path d="M3 10 L17 10 M11 4 L17 10 L11 16" stroke="white" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </button>
+        </div>
+      </div>
+
+      <div id="landing-suggestions">
+        <p class="suggestions-label">Try asking…</p>
+        <div class="chips" id="suggestion-chips">
+          <!-- populated by JS on each load -->
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <footer class="site-footer">
+    <button class="footer-link" onclick="showScreen('screen-parents')">For parents</button>
+    <span class="footer-dot">·</span>
+    <button class="footer-link" onclick="showScreen('screen-kids')">Hello, kids</button>
+    <span class="footer-dot">·</span>
+    <button class="footer-link" onclick="showScreen('screen-about')">About</button>
+  </footer>
+</div>
+
+
+<!-- ══════════════════════════════════════
+     SCREEN 2 — ANSWER PAGE
+══════════════════════════════════════ -->
+<div class="screen" id="screen-answer">
+  <svg class="bg-doodle" width="260" height="260" style="top:-40px;right:-60px;" viewBox="0 0 260 260" fill="none">
+    <circle cx="130" cy="130" r="118" fill="none" stroke="var(--teal)" stroke-width="6"/>
+    <circle cx="130" cy="130" r="88"  fill="none" stroke="var(--teal)" stroke-width="4"/>
+    <circle cx="130" cy="130" r="58"  fill="none" stroke="var(--teal)" stroke-width="2.5"/>
+  </svg>
+  <svg class="bg-doodle" width="180" height="180" style="bottom:40px;left:-50px;opacity:0.05;" viewBox="0 0 180 180" fill="none">
+    <path d="M90 8 C152 34, 178 108, 150 162 C122 206, 32 200, 12 148 C-8 96, 28 36, 90 8Z" fill="var(--teal)"/>
+    <path d="M90 8 Q96 90 82 162" stroke="white" stroke-width="2.5" fill="none" opacity="0.35"/>
+  </svg>
+
+  <header class="site-header" onclick="goHome()">
+    <button class="logo-lockup" onclick="goHome()" aria-label="Wonder home">
+      <!-- Logo: W constellation — irregular hand-mapped, W legible -->
+      <svg class="logo-mark" width="44" height="44" viewBox="0 0 44 44" fill="none" aria-hidden="true">
+        <!-- night sky circle -->
+        <circle cx="22" cy="22" r="21" fill="var(--night)"/>
+        <!-- W constellation lines — hand-drawn feel, varied opacity -->
+        <g stroke="#8BBFB0" stroke-width="1.0" stroke-linecap="round">
+          <line x1="8"  y1="11" x2="15" y2="30" stroke-opacity="0.52"/>
+          <line x1="15" y1="30" x2="20" y2="19" stroke-opacity="0.46"/>
+          <line x1="20" y1="19" x2="29" y2="31" stroke-opacity="0.50"/>
+          <line x1="29" y1="31" x2="34" y2="11" stroke-opacity="0.44"/>
+          <!-- stray lines — constellation chart feel -->
+          <line x1="8"  y1="11" x2="18" y2="6"  stroke-opacity="0.28"/>
+          <line x1="34" y1="11" x2="37" y2="24" stroke-opacity="0.20"/>
+        </g>
+        <!-- W stars — ochre, noticeably varied sizes -->
+        <circle cx="8"  cy="11" r="2.5" fill="var(--ochre)" opacity="0.95"/>
+        <circle cx="15" cy="30" r="1.6" fill="var(--ochre)" opacity="0.85"/>
+        <circle cx="20" cy="19" r="2.1" fill="var(--ochre)" opacity="0.90"/>
+        <circle cx="29" cy="31" r="1.5" fill="var(--ochre)" opacity="0.82"/>
+        <circle cx="34" cy="11" r="2.4" fill="var(--ochre)" opacity="0.95"/>
+        <!-- extra ochre stray — near D, slightly misleads eye before W resolves -->
+        <circle cx="33" cy="23" r="1.3" fill="var(--ochre)" opacity="0.70"/>
+        <!-- white stray stars — depth -->
+        <circle cx="18" cy="6"  r="1.1" fill="white" opacity="0.60"/>
+        <circle cx="37" cy="24" r="0.8" fill="white" opacity="0.40"/>
+        <circle cx="5"  cy="28" r="0.6" fill="white" opacity="0.25"/>
+        <circle cx="26" cy="5"  r="0.6" fill="white" opacity="0.28"/>
+        <circle cx="11" cy="36" r="0.5" fill="white" opacity="0.20"/>
+        <circle cx="38" cy="36" r="0.5" fill="white" opacity="0.22"/>
+      </svg>
+      <div class="logo-wordmark">Wonder</div>
+    </button>
+  </header>
+
+  <div class="answer-body">
+    <div id="answer-content"></div>
+  </div>
+
+  <footer class="site-footer">
+    <button class="footer-link" onclick="showScreen('screen-parents')">For parents</button>
+    <span class="footer-dot">·</span>
+    <button class="footer-link" onclick="showScreen('screen-kids')">Hello, kids</button>
+    <span class="footer-dot">·</span>
+    <button class="footer-link" onclick="showScreen('screen-about')">About</button>
+  </footer>
+</div>
+
+
+<!-- ══════════════════════════════════════
+     SCREEN 3 — FOR PARENTS
+══════════════════════════════════════ -->
+<div class="screen info-page" id="screen-parents">
+
+  <!-- background shapes -->
+  <div class="info-bg-shape" style="top:-80px;right:-80px;opacity:0.07;">
+    <svg width="340" height="340" viewBox="0 0 340 340" fill="none">
+      <path d="M170 12 C250 46, 302 140, 268 238 C234 302, 102 296, 62 210 C22 124, 86 34, 170 12Z" fill="var(--forest)"/>
+      <path d="M170 12 Q178 140 155 238" stroke="var(--paper)" stroke-width="4" fill="none" opacity="0.6"/>
+      <path d="M128 70 Q168 96 182 145" stroke="var(--paper)" stroke-width="2.5" fill="none" opacity="0.4"/>
+      <path d="M200 95 Q186 136 176 170" stroke="var(--paper)" stroke-width="2.5" fill="none" opacity="0.4"/>
+    </svg>
+  </div>
+  <div class="info-bg-shape" style="bottom:20px;left:-60px;opacity:0.06;">
+    <svg width="200" height="200" viewBox="0 0 200 200" fill="none">
+      <circle cx="100" cy="100" r="88" fill="none" stroke="var(--forest)" stroke-width="8"/>
+      <circle cx="100" cy="100" r="62" fill="none" stroke="var(--forest)" stroke-width="5"/>
+      <circle cx="100" cy="100" r="38" fill="none" stroke="var(--forest)" stroke-width="3.5"/>
+      <circle cx="100" cy="100" r="18" fill="none" stroke="var(--forest)" stroke-width="2.5"/>
+    </svg>
+  </div>
+
+  <header class="site-header" onclick="goHome()">
+    <button class="logo-lockup" onclick="goHome()" aria-label="Wonder home">
+      <!-- Logo: W constellation — irregular hand-mapped, W legible -->
+      <svg class="logo-mark" width="44" height="44" viewBox="0 0 44 44" fill="none" aria-hidden="true">
+        <!-- night sky circle -->
+        <circle cx="22" cy="22" r="21" fill="var(--night)"/>
+        <!-- W constellation lines — hand-drawn feel, varied opacity -->
+        <g stroke="#8BBFB0" stroke-width="1.0" stroke-linecap="round">
+          <line x1="8"  y1="11" x2="15" y2="30" stroke-opacity="0.52"/>
+          <line x1="15" y1="30" x2="20" y2="19" stroke-opacity="0.46"/>
+          <line x1="20" y1="19" x2="29" y2="31" stroke-opacity="0.50"/>
+          <line x1="29" y1="31" x2="34" y2="11" stroke-opacity="0.44"/>
+          <!-- stray lines — constellation chart feel -->
+          <line x1="8"  y1="11" x2="18" y2="6"  stroke-opacity="0.28"/>
+          <line x1="34" y1="11" x2="37" y2="24" stroke-opacity="0.20"/>
+        </g>
+        <!-- W stars — ochre, noticeably varied sizes -->
+        <circle cx="8"  cy="11" r="2.5" fill="var(--ochre)" opacity="0.95"/>
+        <circle cx="15" cy="30" r="1.6" fill="var(--ochre)" opacity="0.85"/>
+        <circle cx="20" cy="19" r="2.1" fill="var(--ochre)" opacity="0.90"/>
+        <circle cx="29" cy="31" r="1.5" fill="var(--ochre)" opacity="0.82"/>
+        <circle cx="34" cy="11" r="2.4" fill="var(--ochre)" opacity="0.95"/>
+        <!-- extra ochre stray — near D, slightly misleads eye before W resolves -->
+        <circle cx="33" cy="23" r="1.3" fill="var(--ochre)" opacity="0.70"/>
+        <!-- white stray stars — depth -->
+        <circle cx="18" cy="6"  r="1.1" fill="white" opacity="0.60"/>
+        <circle cx="37" cy="24" r="0.8" fill="white" opacity="0.40"/>
+        <circle cx="5"  cy="28" r="0.6" fill="white" opacity="0.25"/>
+        <circle cx="26" cy="5"  r="0.6" fill="white" opacity="0.28"/>
+        <circle cx="11" cy="36" r="0.5" fill="white" opacity="0.20"/>
+        <circle cx="38" cy="36" r="0.5" fill="white" opacity="0.22"/>
+      </svg>
+      <div class="logo-wordmark">Wonder</div>
+    </button>
+  </header>
+
+  <div class="info-inner">
+
+    <!-- Parent + child illustration -->
+    <svg class="info-illustration" width="210" height="140" viewBox="0 0 210 140" fill="none" aria-label="A parent and child on a hill at dusk, looking up together">
+      <defs>
+        <radialGradient id="duskSky" cx="50%" cy="0%" r="100%">
+          <stop offset="0%" stop-color="#C87840"/>
+          <stop offset="60%" stop-color="#7A4A88"/>
+          <stop offset="100%" stop-color="#1C2B3A"/>
+        </radialGradient>
+      </defs>
+      <!-- dusk sky -->
+      <rect width="210" height="100" rx="12" fill="url(#duskSky)" opacity="0.85"/>
+      <!-- stars peeking through -->
+      <circle cx="30"  cy="20" r="1.2" fill="white" opacity="0.6"/>
+      <circle cx="82"  cy="12" r="1.5" fill="white" opacity="0.7"/>
+      <circle cx="148" cy="18" r="1.2" fill="white" opacity="0.55"/>
+      <circle cx="185" cy="10" r="1.8" fill="#FFF0CC" opacity="0.75"/>
+      <!-- horizon glow -->
+      <ellipse cx="105" cy="100" rx="80" ry="22" fill="#E8903A" opacity="0.4"/>
+      <!-- hill -->
+      <path d="M0 98 Q52 82 105 88 Q158 94 210 80 L210 140 L0 140Z" fill="var(--forest)"/>
+      <!-- PARENT — taller, left of centre -->
+      <line x1="88" y1="92" x2="88" y2="116" stroke="var(--paper)" stroke-width="3.5" stroke-linecap="round"/>
+      <circle cx="88" cy="88" r="6.5" fill="var(--paper)" opacity="0.9"/>
+      <!-- parent arm toward child -->
+      <line x1="88" y1="100" x2="100" y2="105" stroke="var(--paper)" stroke-width="2.8" stroke-linecap="round"/>
+      <!-- parent other arm -->
+      <line x1="88" y1="100" x2="78"  y2="106" stroke="var(--paper)" stroke-width="2.8" stroke-linecap="round"/>
+      <!-- parent legs -->
+      <line x1="88" y1="116" x2="83" y2="128" stroke="var(--paper)" stroke-width="2.8" stroke-linecap="round"/>
+      <line x1="88" y1="116" x2="93" y2="128" stroke="var(--paper)" stroke-width="2.8" stroke-linecap="round"/>
+      <!-- CHILD — smaller, right of parent -->
+      <line x1="108" y1="96" x2="108" y2="116" stroke="var(--ochre-pale)" stroke-width="2.8" stroke-linecap="round"/>
+      <circle cx="108" cy="92.5" r="5.2" fill="var(--ochre-pale)" opacity="0.9"/>
+      <!-- child arm joined to parent -->
+      <line x1="108" y1="104" x2="100" y2="106" stroke="var(--ochre-pale)" stroke-width="2.2" stroke-linecap="round"/>
+      <!-- child arm pointing at sky -->
+      <line x1="108" y1="104" x2="118" y2="96" stroke="var(--ochre-pale)" stroke-width="2.2" stroke-linecap="round"/>
+      <!-- child legs -->
+      <line x1="108" y1="116" x2="104" y2="128" stroke="var(--ochre-pale)" stroke-width="2.2" stroke-linecap="round"/>
+      <line x1="108" y1="116" x2="112" y2="128" stroke="var(--ochre-pale)" stroke-width="2.2" stroke-linecap="round"/>
+      <!-- joined hands highlight -->
+      <circle cx="100" cy="106" r="3" fill="white" opacity="0.3"/>
+    </svg>
+
+    <p class="page-eyebrow">For parents</p>
+    <h1>Wonder is for curious children and the grown-ups beside them.</h1>
+
+    <p>Your child sees a snail crossing the path and wants to know why it leaves a trail. Or they ask why the sky goes dark, or whether volcanoes can erupt underwater. You type the question in. Wonder finds an honest answer — not a simplified one.</p>
+
+    <p>Wonder isn't a teacher, and it isn't trying to be. It's a knowledge companion: something to think alongside. <span class="highlight-line">The curiosity belongs to your child. Wonder just helps it go somewhere.</span></p>
+
+    <p>Wonder is what a child deserves from a piece of technology. Not a reward. Not a score. Not a profile. A real answer to a real question, given with respect.</p>
+
+    <div class="pull-quote">
+      There are no accounts here. No streaks, no dashboards, nothing to unlock. Wonder doesn't remember your child between visits and doesn't track anything. Each question is its own moment.
+    </div>
+
+    <p>Every answer ends with one optional follow-up question — a door your child can choose to open, or walk past. You're in charge of where the conversation goes next.</p>
+
+    <div class="info-cta">
+      <button class="btn-primary" onclick="goHome()">Start exploring together</button>
+    </div>
+  </div>
+
+  <footer class="site-footer">
+    <button class="footer-link" onclick="showScreen('screen-kids')">Hello, kids</button>
+    <span class="footer-dot">·</span>
+    <button class="footer-link" onclick="showScreen('screen-about')">About</button>
+  </footer>
+</div>
+
+
+<!-- ══════════════════════════════════════
+     SCREEN 4 — HELLO KIDS
+══════════════════════════════════════ -->
+<div class="screen info-page" id="screen-kids">
+
+  <!-- background shapes -->
+  <div class="info-bg-shape" style="top:-40px;right:-50px;opacity:0.07;">
+    <svg width="260" height="260" viewBox="0 0 260 260" fill="none">
+      <g transform="translate(130,130)">
+        <line x1="0" y1="-116" x2="0" y2="116" stroke="var(--ochre)" stroke-width="10" stroke-linecap="round"/>
+        <line x1="-116" y1="0" x2="116" y2="0" stroke="var(--ochre)" stroke-width="10" stroke-linecap="round"/>
+        <line x1="-82" y1="-82" x2="82" y2="82" stroke="var(--ochre)" stroke-width="7" stroke-linecap="round"/>
+        <line x1="82" y1="-82" x2="-82" y2="82" stroke="var(--ochre)" stroke-width="7" stroke-linecap="round"/>
+        <circle r="22" fill="var(--ochre)"/>
+      </g>
+    </svg>
+  </div>
+  <div class="info-bg-shape" style="bottom:-20px;left:-60px;opacity:0.06;">
+    <svg width="260" height="160" viewBox="0 0 260 160" fill="none">
+      <circle cx="130" cy="80" r="52" fill="none" stroke="var(--sky)" stroke-width="6"/>
+      <ellipse cx="130" cy="80" rx="108" ry="27" fill="none" stroke="var(--sky)" stroke-width="4"/>
+      <ellipse cx="130" cy="80" rx="82" ry="17" fill="none" stroke="var(--sky)" stroke-width="2.5" opacity="0.6"/>
+    </svg>
+  </div>
+
+  <header class="site-header" onclick="goHome()">
+    <button class="logo-lockup" onclick="goHome()" aria-label="Wonder home">
+      <!-- Logo: W constellation — irregular hand-mapped, W legible -->
+      <svg class="logo-mark" width="44" height="44" viewBox="0 0 44 44" fill="none" aria-hidden="true">
+        <!-- night sky circle -->
+        <circle cx="22" cy="22" r="21" fill="var(--night)"/>
+        <!-- W constellation lines — hand-drawn feel, varied opacity -->
+        <g stroke="#8BBFB0" stroke-width="1.0" stroke-linecap="round">
+          <line x1="8"  y1="11" x2="15" y2="30" stroke-opacity="0.52"/>
+          <line x1="15" y1="30" x2="20" y2="19" stroke-opacity="0.46"/>
+          <line x1="20" y1="19" x2="29" y2="31" stroke-opacity="0.50"/>
+          <line x1="29" y1="31" x2="34" y2="11" stroke-opacity="0.44"/>
+          <!-- stray lines — constellation chart feel -->
+          <line x1="8"  y1="11" x2="18" y2="6"  stroke-opacity="0.28"/>
+          <line x1="34" y1="11" x2="37" y2="24" stroke-opacity="0.20"/>
+        </g>
+        <!-- W stars — ochre, noticeably varied sizes -->
+        <circle cx="8"  cy="11" r="2.5" fill="var(--ochre)" opacity="0.95"/>
+        <circle cx="15" cy="30" r="1.6" fill="var(--ochre)" opacity="0.85"/>
+        <circle cx="20" cy="19" r="2.1" fill="var(--ochre)" opacity="0.90"/>
+        <circle cx="29" cy="31" r="1.5" fill="var(--ochre)" opacity="0.82"/>
+        <circle cx="34" cy="11" r="2.4" fill="var(--ochre)" opacity="0.95"/>
+        <!-- extra ochre stray — near D, slightly misleads eye before W resolves -->
+        <circle cx="33" cy="23" r="1.3" fill="var(--ochre)" opacity="0.70"/>
+        <!-- white stray stars — depth -->
+        <circle cx="18" cy="6"  r="1.1" fill="white" opacity="0.60"/>
+        <circle cx="37" cy="24" r="0.8" fill="white" opacity="0.40"/>
+        <circle cx="5"  cy="28" r="0.6" fill="white" opacity="0.25"/>
+        <circle cx="26" cy="5"  r="0.6" fill="white" opacity="0.28"/>
+        <circle cx="11" cy="36" r="0.5" fill="white" opacity="0.20"/>
+        <circle cx="38" cy="36" r="0.5" fill="white" opacity="0.22"/>
+      </svg>
+      <div class="logo-wordmark">Wonder</div>
+    </button>
+  </header>
+
+  <div class="info-inner" style="align-items:center;text-align:center;">
+
+    <!-- Telescope illustration -->
+    <svg class="info-illustration" width="180" height="168" viewBox="0 0 180 168" fill="none"
+      style="animation: float 6s ease-in-out infinite;"
+      aria-label="A telescope pointing at the night sky">
+      <defs>
+        <radialGradient id="lensShine" cx="35%" cy="35%" r="65%">
+          <stop offset="0%" stop-color="#D4E9F4"/>
+          <stop offset="100%" stop-color="#6BA3C4"/>
+        </radialGradient>
+      </defs>
+      <!-- night sky backdrop (rounded rect) -->
+      <rect x="2" y="2" width="176" height="120" rx="14" fill="#0C1E2C" opacity="0.85"/>
+      <!-- stars -->
+      <circle cx="20"  cy="18" r="1.5" fill="white" opacity="0.7"/>
+      <circle cx="45"  cy="10" r="1.2" fill="#FFF0CC" opacity="0.8"/>
+      <circle cx="68"  cy="24" r="1"   fill="white" opacity="0.6"/>
+      <circle cx="100" cy="12" r="1.8" fill="white" opacity="0.75" style="animation:twinkle 3.5s ease-in-out infinite;"/>
+      <circle cx="130" cy="22" r="1.3" fill="#FFF0CC" opacity="0.65"/>
+      <circle cx="155" cy="8"  r="1.5" fill="white" opacity="0.7"/>
+      <circle cx="165" cy="32" r="1"   fill="white" opacity="0.55"/>
+      <circle cx="14"  cy="48" r="1"   fill="white" opacity="0.45"/>
+      <circle cx="80"  cy="42" r="1.2" fill="white" opacity="0.55"/>
+      <!-- moon in the scene -->
+      <circle cx="148" cy="38" r="16" fill="#EEE8C4" opacity="0.88"/>
+      <circle cx="141" cy="31" r="4"  fill="#D4C87A" opacity="0.2"/>
+
+      <!-- ground strip -->
+      <rect x="2" y="110" width="176" height="56" rx="0" fill="var(--forest)"/>
+      <path d="M2 110 Q46 100 90 104 Q134 108 178 98 L178 110 L2 110Z" fill="#1A3D28"/>
+
+      <!-- Tripod legs -->
+      <line x1="75" y1="108" x2="52" y2="152" stroke="var(--paper)" stroke-width="3" stroke-linecap="round" opacity="0.8"/>
+      <line x1="86" y1="112" x2="88" y2="152" stroke="var(--paper)" stroke-width="3" stroke-linecap="round" opacity="0.8"/>
+      <line x1="97" y1="108" x2="118" y2="152" stroke="var(--paper)" stroke-width="3" stroke-linecap="round" opacity="0.8"/>
+      <line x1="58" y1="142" x2="112" y2="142" stroke="var(--paper)" stroke-width="2" stroke-linecap="round" opacity="0.4"/>
+
+      <!-- Telescope barrel -->
+      <rect x="22" y="72" width="102" height="28" rx="14" fill="var(--forest-mid)" filter="url(#paper)" transform="rotate(-26 73 86)"/>
+      <rect x="30" y="76" width="80" height="20" rx="10" fill="var(--forest)" opacity="0.6" transform="rotate(-26 73 86)"/>
+
+      <!-- Eyepiece (back) -->
+      <rect x="14" y="78" width="16" height="22" rx="6" fill="var(--forest-pale)" stroke="var(--forest)" stroke-width="1.5" transform="rotate(-26 22 89)"/>
+
+      <!-- Objective lens (front) -->
+      <circle cx="130" cy="56" r="22" fill="var(--night)" stroke="var(--forest-mid)" stroke-width="2.5"/>
+      <circle cx="130" cy="56" r="15" fill="url(#lensShine)" opacity="0.75"/>
+      <circle cx="123" cy="49" r="4"  fill="white" opacity="0.35"/>
+
+      <!-- Light beam from lens toward moon -->
+      <line x1="116" y1="46" x2="148" y2="38" stroke="#FFF0CC" stroke-width="1" stroke-dasharray="4 4" stroke-linecap="round" opacity="0.4"/>
+    </svg>
+
+    <p class="page-eyebrow">Hello</p>
+    <h1 style="text-align:center;">You found Wonder.<br>Now ask it something.</h1>
+
+    <p>Got a question about the world? A bug you found, a storm you watched, something that made you think — <em>wait, but why?</em></p>
+
+    <p>Type it in. Wonder will give you a real answer. Not a baby answer — a proper one.</p>
+
+    <p>The curiosity belongs to you. Wonder just helps it go somewhere.</p>
+
+    <div class="kids-fact-box" style="text-align:left;">
+      <p class="fact-eyebrow">How does Wonder know things?</p>
+      <p>Wonder is powered by AI — which means it has read an enormous number of books, science papers, and articles. It isn't magic. It's a kind of very well-read thinking machine. It can make mistakes, but it's very good at explaining how the natural world works.</p>
+    </div>
+
+    <p>After each answer, Wonder leaves you one more question to think about if you want. You don't have to follow it. The choice is always yours.</p>
+
+    <div class="info-cta">
+      <button class="btn-primary" onclick="goHome()">Ask my first question</button>
+    </div>
+  </div>
+
+  <footer class="site-footer">
+    <button class="footer-link" onclick="showScreen('screen-parents')">For parents</button>
+    <span class="footer-dot">·</span>
+    <button class="footer-link" onclick="showScreen('screen-about')">About</button>
+  </footer>
+</div>
+
+
+<!-- ══════════════════════════════════════
+     SCREEN 5 — ABOUT
+══════════════════════════════════════ -->
+<div class="screen info-page" id="screen-about">
+
+  <div class="info-bg-shape" style="top:-30px;right:-30px;opacity:0.05;">
+    <svg width="220" height="220" viewBox="0 0 220 220" fill="none">
+      <circle cx="110" cy="110" r="105" fill="none" stroke="var(--forest)" stroke-width="20"/>
+      <circle cx="110" cy="110" r="75"  fill="none" stroke="var(--forest)" stroke-width="12"/>
+      <circle cx="110" cy="110" r="45"  fill="none" stroke="var(--forest)" stroke-width="7"/>
+    </svg>
+  </div>
+
+  <header class="site-header" onclick="goHome()">
+    <button class="logo-lockup" onclick="goHome()" aria-label="Wonder home">
+      <!-- Logo: W constellation — irregular hand-mapped, W legible -->
+      <svg class="logo-mark" width="44" height="44" viewBox="0 0 44 44" fill="none" aria-hidden="true">
+        <!-- night sky circle -->
+        <circle cx="22" cy="22" r="21" fill="var(--night)"/>
+        <!-- W constellation lines — hand-drawn feel, varied opacity -->
+        <g stroke="#8BBFB0" stroke-width="1.0" stroke-linecap="round">
+          <line x1="8"  y1="11" x2="15" y2="30" stroke-opacity="0.52"/>
+          <line x1="15" y1="30" x2="20" y2="19" stroke-opacity="0.46"/>
+          <line x1="20" y1="19" x2="29" y2="31" stroke-opacity="0.50"/>
+          <line x1="29" y1="31" x2="34" y2="11" stroke-opacity="0.44"/>
+          <!-- stray lines — constellation chart feel -->
+          <line x1="8"  y1="11" x2="18" y2="6"  stroke-opacity="0.28"/>
+          <line x1="34" y1="11" x2="37" y2="24" stroke-opacity="0.20"/>
+        </g>
+        <!-- W stars — ochre, noticeably varied sizes -->
+        <circle cx="8"  cy="11" r="2.5" fill="var(--ochre)" opacity="0.95"/>
+        <circle cx="15" cy="30" r="1.6" fill="var(--ochre)" opacity="0.85"/>
+        <circle cx="20" cy="19" r="2.1" fill="var(--ochre)" opacity="0.90"/>
+        <circle cx="29" cy="31" r="1.5" fill="var(--ochre)" opacity="0.82"/>
+        <circle cx="34" cy="11" r="2.4" fill="var(--ochre)" opacity="0.95"/>
+        <!-- extra ochre stray — near D, slightly misleads eye before W resolves -->
+        <circle cx="33" cy="23" r="1.3" fill="var(--ochre)" opacity="0.70"/>
+        <!-- white stray stars — depth -->
+        <circle cx="18" cy="6"  r="1.1" fill="white" opacity="0.60"/>
+        <circle cx="37" cy="24" r="0.8" fill="white" opacity="0.40"/>
+        <circle cx="5"  cy="28" r="0.6" fill="white" opacity="0.25"/>
+        <circle cx="26" cy="5"  r="0.6" fill="white" opacity="0.28"/>
+        <circle cx="11" cy="36" r="0.5" fill="white" opacity="0.20"/>
+        <circle cx="38" cy="36" r="0.5" fill="white" opacity="0.22"/>
+      </svg>
+      <div class="logo-wordmark">Wonder</div>
+    </button>
+  </header>
+
+  <div class="info-inner">
+    <p class="page-eyebrow">About Wonder</p>
+    <h1>AI as a thinking companion, not an answer machine.</h1>
+
+    <p>Wonder is a simple web app for children aged 7–9, used together with a parent. A child asks a question out loud about the natural world — animals, weather, space, the human body. The parent types it in. Wonder responds honestly, without talking down to the child.</p>
+
+    <p>Every answer ends with one optional follow-up question. A door to open, or not. The child decides.</p>
+
+    <div class="pull-quote">
+      Most tools optimise for completion. Wonder optimises for curiosity. The goal is not to end the child's wondering — it is to deepen it.
+    </div>
+
+    <div class="info-cta">
+      <button class="btn-primary" onclick="goHome()">Back to Wonder</button>
+    </div>
+  </div>
+
+  <footer class="site-footer">
+    <button class="footer-link" onclick="showScreen('screen-parents')">For parents</button>
+    <span class="footer-dot">·</span>
+    <button class="footer-link" onclick="showScreen('screen-kids')">Hello, kids</button>
+  </footer>
+</div>
+
+
+<!-- ══════════════════════════════════════
+     JAVASCRIPT
+══════════════════════════════════════ -->
+<script>
+  /* ── navigation ── */
+  function showScreen(id) {
+    document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+    document.getElementById(id).classList.add('active');
+    window.scrollTo(0, 0);
+  }
+
+  function goHome() {
+    document.getElementById('answer-content').innerHTML = '';
+    followUpCount = 0;
+    buildChips();
+    showScreen('screen-app');
+  }
+
+  /* ── textarea auto-resize ── */
+  function autoResize(el) {
+    el.style.height = 'auto';
+    el.style.height = Math.min(el.scrollHeight, 150) + 'px';
+  }
+
+  /* ── enter to submit ── */
+  function handleKey(e) {
+    if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); askWonder(); }
+  }
+
+  /* ── chip on landing page → ask directly ── */
+  function askChip(el) {
+    submit(el.textContent.trim());
+  }
+
+  /* ── chip on answer page (follow-up) → event delegation ── */
+  document.addEventListener('click', function(e) {
+    if (e.target.classList.contains('followup-chip')) {
+      submit(e.target.dataset.q);
+    }
+  });
+
+  /* ── type-in submit ── */
+  function askWonder() {
+    const input = document.getElementById('q-input');
+    const q = input.value.trim();
+    if (!q) return;
+    input.value = '';
+    input.style.height = 'auto';
+    submit(q);
+  }
+
+  /* ── question pool — 4 always shown, 4 rotate randomly each load ── */
+  const FIXED_CHIPS  = ['Why do we dream?', 'Why is the sky blue?', 'Do fish sleep?', 'What makes thunder?'];
+  const ROTATE_CHIPS = [
+    'How do bees make honey?', 'Why do volcanoes erupt?',
+    'How do birds know where to fly?', 'Why do leaves change colour?',
+    'What is inside a black hole?', 'How do caterpillars turn into butterflies?',
+    'Why do we get goosebumps?', 'How do trees grow so tall?',
+    'Why does the moon change shape?', 'What makes a rainbow?',
+    'Why do cats purr?', 'How do spiders make webs?',
+    'Why does it snow?', 'How deep is the ocean?',
+    'Why do flowers have petals?', 'What makes the wind?'
+  ];
+  function buildChips() {
+    const pool = [...ROTATE_CHIPS].sort(() => Math.random() - 0.5).slice(0, 4);
+    const all  = [...FIXED_CHIPS, ...pool].sort(() => Math.random() - 0.5);
+    const container = document.getElementById('suggestion-chips');
+    if (container) {
+      container.innerHTML = all.map(q =>
+        `<span class="chip" onclick="askChip(this)">${q}</span>`
+      ).join('');
+    }
+  }
+  buildChips();
+
+  /* ── followUpCount tracks depth: 0 = fresh question, 1-3 = follow-ups, 3 = wrap-up ── */
+  const MAX_FOLLOWUPS = 3;
+  let followUpCount = 0;
+
+  /* ── core submit function ── */
+  async function submit(question) {
+    const answerEl      = document.getElementById('answer-content');
+    const thisDepth     = followUpCount;
+    const isWrapUp      = thisDepth >= MAX_FOLLOWUPS;
+
+    answerEl.innerHTML = `
+      <div class="loading-card">
+        <div class="dots"><span></span><span></span><span></span></div>
+        <p class="loading-text">Wonder is thinking…</p>
+      </div>`;
+    showScreen('screen-answer');
+
+    const systemPrompt = isWrapUp
+      ? `You are Wonder — a warm, honest knowledge companion for children aged 7-9, used alongside a parent.
+Your tone is inspired by Oliver Jeffers' "Here We Are": direct, warm, trusting.
+Rules:
+- Answer only questions about the natural world. If out of scope, gently redirect.
+- Write 3-5 sentences. Clear, confident, age-appropriate but not dumbed down.
+- Do NOT add follow-up questions. End your answer with one warm closing sentence on a new line starting exactly with the label "That's all for now -" e.g. "That's all for now - if another question pops into your head, just ask."
+- Do not use bullet points. Write in flowing sentences.
+- Do not start with filler. Just answer.`
+      : `You are Wonder — a warm, honest knowledge companion for children aged 7-9, used alongside a parent.
+Your tone is inspired by Oliver Jeffers' "Here We Are": direct, warm, trusting. You treat children as capable of understanding real explanations. You never talk down to them.
+Rules:
+- Answer only questions about the natural world: animals, insects, plants, weather, space, the human body, and the environment.
+- If out of scope, acknowledge warmly and invite them to ask about the natural world.
+- Write 3-5 sentences maximum. Clear, confident, age-appropriate but not dumbed down.
+- End EVERY response with the label "Curious about more?" on its own line, then on the very next line give exactly 2 short follow-up questions separated by a | character. Keep each under 10 words.
+- Do not use bullet points. Write in flowing sentences.
+- Do not start with "Great question!" or filler. Just answer.`;
+
+    try {
+      // Important: this now calls our own serverless function on Vercel,
+      // not Anthropic directly from the browser. That keeps the API key secret.
+      const res = await fetch('/api/ask', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ question, systemPrompt })
+      });
+
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error?.message || 'Something went wrong');
+
+      const text = data.content[0].text;
+      let answerHtml = '';
+
+      if (isWrapUp) {
+        // Final answer — no follow-up chips, just a warm close + "ask another"
+        const wrapParts = text.split(/That's all for now\s*[-—–]/i);
+        const answer    = wrapParts[0].trim();
+        const wrapMsg   = wrapParts[1]
+          ? "That's all for now \u2014 " + wrapParts[1].trim()
+          : "That's all for now \u2014 if another question pops into your head, just ask.";
+
+        answerHtml = `
+          <div class="answer-card">
+            <p class="answer-you-asked">You asked</p>
+            <p class="answer-question">${esc(question)}</p>
+            <p class="answer-text">${esc(answer)}</p>
+            <div class="answer-wrapup">
+              <p class="wrapup-text">${esc(wrapMsg)}</p>
+            </div>
+          </div>
+          <div style="margin-top:8px;">
+            <button class="ask-another-btn" onclick="goHome()">Ask another question</button>
+          </div>`;
+        followUpCount = 0; // reset for next fresh question
+
+      } else {
+        // Normal answer with follow-up chips
+        const parts  = text.split(/Curious about more\?/i);
+        const answer = parts[0].trim();
+        let followupHtml = '';
+
+        if (parts[1]) {
+          const followups = parts[1].trim().split('|').map(s => s.trim()).filter(Boolean);
+          if (followups.length) {
+            // Show how many follow-ups remain
+            const remaining = MAX_FOLLOWUPS - thisDepth - 1;
+            const chipsMarkup = followups.map(f => {
+              const safe = f.replace(/&/g,'&amp;').replace(/"/g,'&quot;');
+              return `<span class="chip followup-chip" data-q="${safe}">${esc(f)}</span>`;
+            }).join('');
+            followupHtml = `
+              <div class="answer-followup">
+                <p class="followup-label">Curious about more?</p>
+                <div class="followup-chips">${chipsMarkup}</div>
+              </div>`;
+          }
+        }
+
+        answerHtml = `
+          <div class="answer-card">
+            <p class="answer-you-asked">You asked</p>
+            <p class="answer-question">${esc(question)}</p>
+            <p class="answer-text">${esc(answer)}</p>
+            ${followupHtml}
+          </div>
+          <div style="margin-top:8px;">
+            <button class="ask-another-btn" onclick="goHome()">Ask another question</button>
+          </div>`;
+
+        followUpCount = thisDepth + 1; // increment depth
+      }
+
+      answerEl.innerHTML = answerHtml;
+
+    } catch(err) {
+      followUpCount = 0;
+      answerEl.innerHTML = `
+        <div class="error-card">
+          Something went wrong — the stars weren't quite aligned. Try asking again?
+        </div>
+        <div style="margin-top:12px;">
+          <button class="ask-another-btn" onclick="goHome()">Ask another question</button>
+        </div>`;
+    }
+  }
+
+  function esc(s) {
+    return String(s)
+      .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
+      .replace(/"/g,'&quot;').replace(/'/g,'&#039;');
+  }
+</script>
+</body>
+</html>
