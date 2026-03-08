@@ -32,7 +32,6 @@ export default async function handler(req, res) {
         'x-api-key': apiKey,
         'anthropic-version': '2023-06-01',
         // Newer Claude models, including 4.5, use this beta flag.
-        'anthropic-beta': 'messages-2025-06-01',
       },
       body: JSON.stringify({
         model: 'claude-haiku-4-5-20251001',
